@@ -2,6 +2,8 @@ import {View, Text, StyleSheet, TouchableOpacity, Image} from 'react-native';
 import React from 'react';
 import {heightToDp, widthToDp} from '../utils/dimensions';
 import {Colors} from '../utils/colors';
+import moment from 'moment';
+import {useNavigation} from '@react-navigation/native';
 
 export type VideoProps = {
   thumbnail: string;
@@ -9,6 +11,8 @@ export type VideoProps = {
   channel: string;
   channelImage: string;
   date: string;
+  id: string;
+  channel_id: string;
 };
 
 export default function VideoCard({
@@ -17,17 +21,34 @@ export default function VideoCard({
   title,
   channel,
   date,
+  channel_id,
+
+  id,
 }: VideoProps): JSX.Element {
+  const navigation = useNavigation();
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.thumbView}>
+      <TouchableOpacity
+        onPress={() => {
+          navigation.navigate('Video', {
+            videoId: id,
+            channel_id: channel_id,
+          });
+        }}
+        style={styles.thumbView}>
         <Image
           source={{uri: thumbnail}}
           style={[styles.imagesStyle, {borderRadius: widthToDp(2)}]}
         />
       </TouchableOpacity>
       <View style={styles.infoView}>
-        <TouchableOpacity style={[styles.channelImageView, {flex: 1}]}>
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate('Profile', {
+              channel_id: channel_id,
+            });
+          }}
+          style={[styles.channelImageView, {flex: 1}]}>
           <Image
             source={{uri: channelImage}}
             style={[styles.imagesStyle, {borderRadius: widthToDp(7)}]}
@@ -38,7 +59,7 @@ export default function VideoCard({
           <Text style={styles.title}>{title}</Text>
           <View
             style={{flexDirection: 'row', alignItems: 'center', marginTop: 5}}>
-            <Text style={styles.channel}>{date}</Text>
+            <Text style={styles.channel}>{moment(date).fromNow()}</Text>
             <Text style={styles.channel}>{channel}</Text>
           </View>
         </View>
@@ -53,6 +74,7 @@ const styles = StyleSheet.create({
     borderRadius: widthToDp(2),
     height: heightToDp(40),
     marginBottom: heightToDp(1),
+    backgroundColor: 'red',
   },
   thumbView: {
     width: widthToDp(100),

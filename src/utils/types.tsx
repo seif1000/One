@@ -5,8 +5,13 @@ export type RootStackParamListAuth = {
 };
 export type RootStackParamListApp = {
   Root: NavigatorScreenParams<TabParamList>;
-  Video: undefined;
-  Profile: undefined;
+  Video: {
+    videoId: string;
+    channel_id: string;
+  };
+  Profile: {
+    channel_id: string;
+  };
 };
 export type TabParamList = {
   Home: undefined;

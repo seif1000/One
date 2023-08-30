@@ -33,8 +33,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   imageView: {
-    width: heightToDp(7),
-    height: heightToDp(7),
+    width: heightToDp(6),
+    height: heightToDp(6),
   },
   image: {
     width: '100%',

@@ -5,22 +5,11 @@ import Input from '../../components/Input';
 import {heightToDp} from '../../utils/dimensions';
 import Creator, {CreatorProps} from '../../components/Creator';
 import youtub from '../../api/youtub';
+import axios from 'axios';
 
 export default function Serach() {
   const [search, setSearch] = React.useState('');
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const response = await youtub.get('/search');
-        console.log('====================================');
-        console.log(response.data.items[0]);
-        console.log('====================================');
-      } catch (error) {
-        console.log(error);
-      }
-    })();
-  });
   return (
     <SafeAreaView style={styles.container}>
       <Input

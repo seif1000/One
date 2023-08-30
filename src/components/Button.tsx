@@ -12,6 +12,7 @@ type Props = {
   onPress: () => void;
   isLoading: boolean;
   disabled: boolean;
+  width?: number;
 };
 
 export default function Button({
@@ -23,11 +24,15 @@ export default function Button({
   onPress,
   disabled,
   withIcon,
+  width = widthToDp(95),
 }: Props): JSX.Element {
   return (
     <Ripple
       rippleContainerBorderRadius={widthToDp(1)}
-      style={[styles.container, {backgroundColor: backgroundColor}]}>
+      style={[
+        styles.container,
+        {backgroundColor: backgroundColor, width: width},
+      ]}>
       {isLoading ? (
         <ActivityIndicator color={textColor} animating={true} />
       ) : (
@@ -42,9 +47,8 @@ export default function Button({
 
 const styles = StyleSheet.create({
   container: {
-    width: widthToDp(95),
     marginHorizontal: widthToDp(2.5),
-    height: widthToDp(12),
+    height: widthToDp(10),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
