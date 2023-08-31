@@ -34,8 +34,5 @@ export const CREATORS = [
 ];
 
 export const API_KEY = 'AIzaSyC7hjcfSe5Cf9dnmU8P7q3VEEdf2n_Wu1Q';
-//'AIzaSyDwmGwX7dMXVnyTAsVrqL2mrlAMV4ueCFE';
-//'AIzaSyDGuslhn_J45-RROsRwALhyvzGoUNwtg1g';
-// 'AIzaSyDwmGwX7dMXVnyTAsVrqL2mrlAMV4ueCFE';
 
 //;
