@@ -28,40 +28,45 @@ export default function Home({navigation, route}: Props): JSX.Element {
   const [nextPages, setNextPages] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isfetshing, setIsfetshing] = useState<boolean>(false);
+  //const [channels, setChannels] = useState([]);
 
   const fetchVideos = async (isFetch: boolean) => {
     try {
+      let channels: Array<{id: string; image: string; subs: string}> = [];
       if (isFetch) {
-        console.log('isFetch');
-
         setIsfetshing(true);
       } else {
         setIsLoading(true);
+        const channel_ids = CREATORS.map(item => item.id).join(',');
+        const channelDetailsRes = await axios.get(`
+        https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${channel_ids}&key=${API_KEY}
+        `);
+
+        const channelDetails = channelDetailsRes.data.items.map(item => {
+          return {
+            id: item.id,
+            image: item.snippet.thumbnails.default.url,
+            subs: item.statistics.subscriberCount,
+          };
+        });
+
+        channels = channelDetails;
       }
 
-      const channelResponse = CREATORS.slice(0, 1).map(async creator => {
+      const channelResponse = CREATORS.map(async creator => {
         const next_page_token = nextPages.find(
           item => item.id === creator.id,
         )?.token;
 
         if (nextPages.length > 0) {
           if (next_page_token) {
-            console.log('====================================');
-            console.log(next_page_token);
-            console.log('====================================');
             return await axios.get(
               `https://www.googleapis.com/youtube/v3/search?order=date&part=snippet&channelId=${creator.id}&pageToken=${next_page_token}&maxResults=50&key=${API_KEY}`,
             );
           } else {
-            console.log('====================================');
-            console.log('end next_page_token');
-            console.log('====================================');
             return;
           }
         } else {
-          console.log('====================================');
-          console.log('no next_page_token');
-          console.log('====================================');
           return await axios.get(
             `https://www.googleapis.com/youtube/v3/search?order=date&part=snippet&channelId=${creator.id}&maxResults=50&key=${API_KEY}`,
           );
@@ -82,7 +87,21 @@ export default function Home({navigation, route}: Props): JSX.Element {
         channelImage: item.snippet.thumbnails.default.url,
         thumbnail: item.snippet.thumbnails.medium.url,
         date: item.snippet.publishedAt,
+        sortDate: new Date(item.snippet.publishedAt).getTime(),
       }));
+
+      vids = vids.sort((a, b) => b.sortDate - a.sortDate);
+
+      vids = vids.map(item => {
+        const channel = channels.find(
+          channel => channel.id === item.channel_id,
+        );
+        return {
+          ...item,
+          channelImage: channel?.image,
+          subs: channel?.subs,
+        };
+      });
       const tokens = res
         .filter(item => item !== undefined)
         .map(item => ({
@@ -129,6 +148,7 @@ export default function Home({navigation, route}: Props): JSX.Element {
         channelImage={item.channelImage}
         date={item.date}
         channel_id={item.channel_id}
+        subs={item.subs}
       />
     );
   };

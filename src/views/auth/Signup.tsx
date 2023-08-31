@@ -1,10 +1,42 @@
 import {View, Text, StyleSheet, Image} from 'react-native';
-import React from 'react';
+import React, {useState} from 'react';
 import {Colors} from '../../utils/colors';
 import Button from '../../components/Button';
 import {heightToDp, widthToDp} from '../../utils/dimensions';
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
 
 export default function Signup() {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const signIn = () => {
+    setIsLoading(true);
+    auth()
+      .signInAnonymously()
+      .then(user => {
+        firestore()
+          .collection('Users')
+          .doc(user.user.uid)
+          .set({
+            _id: user.user.uid,
+            createdAt: new Date().getTime(),
+            followings: [],
+            videos: [],
+          })
+          .then(() => {
+            console.log('User added!');
+          });
+
+        setIsLoading(false);
+      })
+      .catch(error => {
+        setIsLoading(false);
+        if (error.code === 'auth/operation-not-allowed') {
+          console.log('Enable anonymous in your firebase console.');
+        }
+
+        console.error(error);
+      });
+  };
   return (
     <View style={styles.container}>
       <Image source={require('../../../assets/images/one.png')} />
@@ -15,9 +47,11 @@ export default function Signup() {
           withIcon={true}
           backgroundColor={Colors.WHITE}
           textColor={Colors.BLACK}
-          onPress={() => {}}
-          isLoading={false}
-          disabled={false}
+          onPress={() => {
+            signIn();
+          }}
+          isLoading={isLoading}
+          disabled={isLoading}
           icon={require('../../../assets/images/apple.png')}
         />
       </View>

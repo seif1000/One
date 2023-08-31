@@ -1,15 +1,22 @@
-import {View, Text, StyleSheet, Image} from 'react-native';
+import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
 import React from 'react';
 import {heightToDp} from '../utils/dimensions';
 
 export type CreatorProps = {
   name: string;
   image: string;
+  subs: string;
+  id: string;
+  onPress: () => void;
 };
 
-export default function Creator({name, image}: CreatorProps): JSX.Element {
+export default function Creator({
+  name,
+  image,
+  onPress,
+}: CreatorProps): JSX.Element {
   return (
-    <View style={styles.container}>
+    <TouchableOpacity onPress={onPress} style={styles.container}>
       <View style={styles.imageView}>
         <Image source={{uri: image}} style={styles.image} />
       </View>
@@ -20,7 +27,7 @@ export default function Creator({name, image}: CreatorProps): JSX.Element {
           source={require('../../assets/images/thik.png')}
         />
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 

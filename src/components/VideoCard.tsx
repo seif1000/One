@@ -13,6 +13,7 @@ export type VideoProps = {
   date: string;
   id: string;
   channel_id: string;
+  subs: string;
 };
 
 export default function VideoCard({
@@ -22,8 +23,8 @@ export default function VideoCard({
   channel,
   date,
   channel_id,
-
   id,
+  subs,
 }: VideoProps): JSX.Element {
   const navigation = useNavigation();
   return (
@@ -33,6 +34,11 @@ export default function VideoCard({
           navigation.navigate('Video', {
             videoId: id,
             channel_id: channel_id,
+            videoTitle: title,
+            videoDate: date,
+            channel_image: channelImage,
+            channel_name: channel,
+            channel_subs: subs,
           });
         }}
         style={styles.thumbView}>
@@ -46,6 +52,9 @@ export default function VideoCard({
           onPress={() => {
             navigation.navigate('Profile', {
               channel_id: channel_id,
+              channel_image: channelImage,
+              channel_name: channel,
+              channel_subs: subs,
             });
           }}
           style={[styles.channelImageView, {flex: 1}]}>
@@ -74,7 +83,7 @@ const styles = StyleSheet.create({
     borderRadius: widthToDp(2),
     height: heightToDp(40),
     marginBottom: heightToDp(1),
-    backgroundColor: 'red',
+    // backgroundColor: 'red',
   },
   thumbView: {
     width: widthToDp(100),

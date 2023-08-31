@@ -8,7 +8,7 @@ import {
   FlatList,
   ActivityIndicator,
 } from 'react-native';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {RootStackParamListApp} from '../../utils/types';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {Colors} from '../../utils/colors';
@@ -16,10 +16,81 @@ import {heightToDp, widthToDp} from '../../utils/dimensions';
 import Button from '../../components/Button';
 import VideoCard, {VideoProps} from '../../components/VideoCard';
 import YoutubePlayer from 'react-native-youtube-iframe';
+import moment from 'moment';
+import axios from 'axios';
+import {API_KEY} from '../../utils/contants';
+import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
+import millify from 'millify';
 
 type Props = NativeStackScreenProps<RootStackParamListApp, 'Video'> & {};
 
 export default function Video({route, navigation}: Props): JSX.Element {
+  const [videos, setVideos] = useState<VideoProps[]>([]);
+  const [nextPageToken, setNextPageToken] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isfetshing, setIsfetshing] = useState<boolean>(false);
+
+  useEffect(() => {
+    fetchVideos(false);
+  }, []);
+
+  const fetchVideos = async (isFetch: boolean) => {
+    try {
+      if (isFetch) {
+        setIsfetshing(true);
+      } else {
+        setIsLoading(true);
+      }
+
+      let res;
+
+      if (nextPageToken != '') {
+        res = await axios.get(
+          `https://www.googleapis.com/youtube/v3/search?order=date&part=snippet&channelId=${route.params.channel_id}&pageToken=${nextPageToken}&maxResults=50&key=${API_KEY}`,
+        );
+      } else {
+        if (videos.length > 0) {
+          return;
+        }
+        res = await axios.get(
+          `https://www.googleapis.com/youtube/v3/search?order=date&part=snippet&channelId=${route.params.channel_id}&maxResults=50&key=${API_KEY}`,
+        );
+      }
+
+      let vids = res?.data.items.map(item => ({
+        id: item.id.videoId,
+        title: item.snippet.title,
+        channel: item.snippet.channelTitle,
+        channel_id: item.snippet.channelId,
+        channelImage: route.params.channel_image,
+        subs: route.params.channel_subs,
+        thumbnail: item.snippet.thumbnails.medium.url,
+        date: item.snippet.publishedAt,
+      }));
+
+      // concat videos
+      if (isFetch) {
+        vids = [...videos, ...vids];
+      }
+      setVideos(vids);
+      setNextPageToken(res.data.nextPageToken);
+      if (isFetch) {
+        setIsfetshing(false);
+      } else {
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.log('====================================');
+      console.log(error);
+      console.log('====================================');
+      if (isFetch) {
+        setIsfetshing(false);
+      } else {
+        setIsLoading(false);
+      }
+    }
+  };
   const renderItems = ({index, item}: {index: number; item: VideoProps}) => {
     return (
       <VideoCard
@@ -31,8 +102,31 @@ export default function Video({route, navigation}: Props): JSX.Element {
         channelImage={item.channelImage}
         date={item.date}
         channel_id={item.channel_id}
+        subs={item.subs}
       />
     );
+  };
+
+  const OnAddVideo = async () => {
+    try {
+      const user = await firestore()
+        .collection('Users')
+        .doc(auth().currentUser?.uid)
+        .get();
+
+      if (user.exists) {
+        firestore()
+          .collection('Users')
+          .doc(auth().currentUser?.uid)
+          .update({
+            videos: firestore.FieldValue.arrayUnion(route.params.videoId),
+          });
+      } else {
+        return;
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
   return (
     <SafeAreaView style={styles.container}>
@@ -47,11 +141,10 @@ export default function Video({route, navigation}: Props): JSX.Element {
             />
           </View>
           <View style={styles.textView}>
-            <Text style={styles.title}>
-              Friends Can Make Or Break YOU (my personal journey & what I
-              learned) 2 days ago
+            <Text style={styles.title}>{route.params.videoTitle}</Text>
+            <Text style={styles.date}>
+              {moment(route.params.videoDate).fromNow()}
             </Text>
-            <Text style={styles.date}>2 Days ago</Text>
           </View>
         </View>
 
@@ -59,15 +152,17 @@ export default function Video({route, navigation}: Props): JSX.Element {
           <View style={styles.channelViewLeft}>
             <Image
               source={{
-                uri: 'https://thumbs.dreamstime.com/b/handsome-man-black-suit-white-shirt-posing-studio-attractive-guy-fashion-hairstyle-confident-man-short-beard-125019349.jpg',
+                uri: route.params.channel_image,
               }}
               style={styles.channelImage}
             />
             <View style={{marginLeft: 8}}>
               <Text style={[styles.title, {marginBottom: 0}]}>
-                Nathan Lucas
+                {route.params.channel_name}
               </Text>
-              <Text style={styles.date}>2.5M subscribers</Text>
+              <Text style={styles.date}>
+                {millify(Number(route.params.channel_subs))} subscribers
+              </Text>
             </View>
           </View>
           <View style={styles.channelViewRight}>
@@ -93,6 +188,7 @@ export default function Video({route, navigation}: Props): JSX.Element {
             <Text style={{color: Colors.WHITE, marginTop: 6}}>Like</Text>
           </TouchableOpacity>
           <TouchableOpacity
+            onPress={OnAddVideo}
             style={{justifyContent: 'center', alignItems: 'center'}}>
             <Image
               style={styles.icon}
@@ -110,24 +206,36 @@ export default function Video({route, navigation}: Props): JSX.Element {
           </TouchableOpacity>
         </View>
       </View>
-      <FlatList
-        data={[1, 2, 2]}
-        keyExtractor={(_, index) => index.toString()}
-        renderItem={renderItems}
-        onEndReachedThreshold={0.8}
-        onEndReached={() => {}}
-        ListFooterComponent={() => {
-          return (
-            <View style={{paddingVertical: heightToDp(5)}}>
-              <ActivityIndicator
-                animating
-                color={'white'}
-                size={widthToDp(20)}
-              />
-            </View>
-          );
-        }}
-      />
+      {isLoading ? (
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <ActivityIndicator animating color={Colors.WHITE} />
+        </View>
+      ) : (
+        <FlatList
+          data={videos}
+          keyExtractor={(_, index) => index.toString()}
+          renderItem={renderItems}
+          onEndReachedThreshold={0.8}
+          onEndReached={() => {
+            if (isfetshing) {
+              return;
+            }
+
+            fetchVideos(true);
+          }}
+          ListFooterComponent={() => {
+            return (
+              <View style={{paddingVertical: heightToDp(5)}}>
+                <ActivityIndicator
+                  animating
+                  color={'white'}
+                  size={widthToDp(20)}
+                />
+              </View>
+            );
+          }}
+        />
+      )}
     </SafeAreaView>
   );
 }

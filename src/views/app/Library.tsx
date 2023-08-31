@@ -6,17 +6,95 @@ import {
   FlatList,
   ActivityIndicator,
 } from 'react-native';
-import React from 'react';
+import React, {useEffect} from 'react';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {RootStackParamListApp} from '../../utils/types';
+import {RootStackParamListApp, TabParamList} from '../../utils/types';
 import {Colors} from '../../utils/colors';
 import {heightToDp, widthToDp} from '../../utils/dimensions';
 import Button from '../../components/Button';
 import VideoCard, {VideoProps} from '../../components/VideoCard';
+import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
+import {CompositeScreenProps} from '@react-navigation/native';
+import {BottomTabScreenProps} from '@react-navigation/bottom-tabs';
+import axios from 'axios';
+import {API_KEY, CREATORS} from '../../utils/contants';
 
-type Props = NativeStackScreenProps<RootStackParamListApp, 'Library'> & {};
+type Props = CompositeScreenProps<
+  BottomTabScreenProps<TabParamList, 'Library'>,
+  NativeStackScreenProps<RootStackParamListApp>
+>;
 
 export default function Library({navigation}: Props) {
+  const [laterVideos, setLaterVideos] = React.useState<VideoProps[]>([]);
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  useEffect(() => {
+    navigation.addListener('focus', () => {
+      fetchVideos();
+    });
+  }, []);
+
+  const fetchVideos = async () => {
+    try {
+      setIsLoading(true);
+      const user = await firestore()
+        .collection('Users')
+        .doc(auth().currentUser?.uid)
+        .get();
+      const videos = user.data()?.videos;
+      setLaterVideos(videos);
+
+      if (videos.length > 0) {
+        const channel_ids = CREATORS.map(item => item.id).join(',');
+        const channelDetailsRes = await axios.get(`
+        https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${channel_ids}&key=${API_KEY}
+        `);
+
+        const channelDetails = channelDetailsRes.data.items.map(item => {
+          return {
+            id: item.id,
+            image: item.snippet.thumbnails.default.url,
+            subs: item.statistics.subscriberCount,
+          };
+        });
+
+        const vidIds = videos.map((item: any) => item).join(',');
+        const vidRes = await axios.get(
+          `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${vidIds}&key=${API_KEY}`,
+        );
+        let vidDetails = vidRes.data.items.map((item: any) => {
+          return {
+            id: item.id,
+            thumbnail: item.snippet.thumbnails.medium.url,
+            title: item.snippet.title,
+            channel: item.snippet.channelTitle,
+            channelImage: item.snippet.thumbnails.default.url,
+            date: item.snippet.publishedAt,
+            channel_id: item.snippet.channelId,
+            subs: '',
+          };
+        });
+        console.log(vidDetails);
+
+        vidDetails = vidDetails.map((item: any) => {
+          const channel = channelDetails.find(
+            channel => channel.id === item.channel_id,
+          );
+          return {
+            ...item,
+            subs: channel?.subs,
+            channelImage: channel?.image,
+          };
+        });
+        setLaterVideos(vidDetails);
+      }
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+      console.log(error);
+    }
+  };
+
   const renderItems = ({index, item}: {index: number; item: VideoProps}) => {
     return (
       <VideoCard
@@ -28,6 +106,7 @@ export default function Library({navigation}: Props) {
         channelImage={item.channelImage}
         date={item.date}
         channel_id={item.channel_id}
+        subs={item.subs}
       />
     );
   };
@@ -87,6 +166,7 @@ export default function Library({navigation}: Props) {
           />
         </View>
       </View>
+
       <Text
         style={{
           color: Colors.WHITE,
@@ -95,26 +175,29 @@ export default function Library({navigation}: Props) {
         }}>
         watch later
       </Text>
-      <FlatList
-        data={[1, 2, 2]}
-        keyExtractor={(_, index) => index.toString()}
-        renderItem={renderItems}
-        onEndReachedThreshold={0.8}
-        onEndReached={() => {
-          //  fetchVideos(true);
-        }}
-        ListFooterComponent={() => {
-          return (
-            <View style={{paddingVertical: heightToDp(5)}}>
-              <ActivityIndicator
-                animating
-                color={'white'}
-                size={widthToDp(20)}
-              />
-            </View>
-          );
-        }}
-      />
+      {isLoading ? (
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <ActivityIndicator animating color={Colors.WHITE} />
+        </View>
+      ) : (
+        <FlatList
+          data={laterVideos}
+          keyExtractor={(_, index) => index.toString()}
+          renderItem={renderItems}
+          ListEmptyComponent={() => {
+            return (
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                <Text style={{color: Colors.WHITE}}>No videos found</Text>
+              </View>
+            );
+          }}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -123,5 +206,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.BLACK,
+    // paddingHorizontal: widthToDp(2.5),
   },
 });

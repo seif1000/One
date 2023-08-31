@@ -2,6 +2,7 @@ import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
 import React from 'react';
 import {heightToDp, widthToDp} from '../utils/dimensions';
 import {Colors} from '../utils/colors';
+import auth from '@react-native-firebase/auth';
 
 type Props = {
   onPress: () => void;
@@ -24,7 +25,11 @@ export default function HomeHeader({onPress}: Props): JSX.Element {
           />
         </TouchableOpacity>
 
-        <View style={styles.user} />
+        <TouchableOpacity
+          style={styles.user}
+          onPress={() => {
+            auth().signOut().then();
+          }}></TouchableOpacity>
       </View>
     </View>
   );
@@ -38,6 +43,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingRight: widthToDp(5),
   },
   leftView: {
     flexDirection: 'row',

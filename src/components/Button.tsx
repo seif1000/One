@@ -28,6 +28,7 @@ export default function Button({
 }: Props): JSX.Element {
   return (
     <Ripple
+      onPress={onPress}
       rippleContainerBorderRadius={widthToDp(1)}
       style={[
         styles.container,
@@ -53,6 +54,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: widthToDp(1),
+    borderWidth: 1,
+    borderColor: 'white',
   },
   text: {
     fontSize: widthToDp(4.5),
