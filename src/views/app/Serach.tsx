@@ -30,9 +30,11 @@ export default function Serach({navigation, route}: Props) {
     try {
       setIsLoading(true);
       const channel_ids = CREATORS.map(item => item.id).join(',');
-      const channelDetailsRes = await axios.get(`  
+      const channelDetailsRes = await axios.get(
+        `  
         https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${channel_ids}&key=${API_KEY}
-        `);
+        `.trim(),
+      );
 
       const channelDetails = channelDetailsRes.data.items.map(item => {
         return {
