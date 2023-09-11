@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {RootStackParamListApp} from '../../utils/types';
@@ -128,9 +129,17 @@ export default function Video({route, navigation}: Props): JSX.Element {
       console.log(error);
     }
   };
-  return (
-    <SafeAreaView style={styles.container}>
+  const renderHeader = () => {
+    return (
       <View style={styles.videoContainer}>
+        <TouchableOpacity
+          style={styles.backView}
+          onPress={() => navigation.goBack()}>
+          <Image
+            style={{width: widthToDp(6), height: widthToDp(6)}}
+            source={require('../../../assets/images/back.png')}
+          />
+        </TouchableOpacity>
         <View style={styles.videoView}>
           <View style={styles.video}>
             <YoutubePlayer
@@ -206,6 +215,17 @@ export default function Video({route, navigation}: Props): JSX.Element {
           </TouchableOpacity>
         </View>
       </View>
+    );
+  };
+  const renderFooter = () => {
+    return (
+      <View style={{paddingVertical: heightToDp(5)}}>
+        <ActivityIndicator animating color={'white'} size={widthToDp(20)} />
+      </View>
+    );
+  };
+  return (
+    <SafeAreaView style={styles.container}>
       {isLoading ? (
         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
           <ActivityIndicator animating color={Colors.WHITE} />
@@ -223,17 +243,8 @@ export default function Video({route, navigation}: Props): JSX.Element {
 
             fetchVideos(true);
           }}
-          ListFooterComponent={() => {
-            return (
-              <View style={{paddingVertical: heightToDp(5)}}>
-                <ActivityIndicator
-                  animating
-                  color={'white'}
-                  size={widthToDp(20)}
-                />
-              </View>
-            );
-          }}
+          ListHeaderComponent={renderHeader}
+          ListFooterComponent={renderFooter}
         />
       )}
     </SafeAreaView>
@@ -244,6 +255,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.BLACK,
+    // flexGrow: 1,
   },
   videoContainer: {
     width: '100%',
@@ -292,5 +304,20 @@ const styles = StyleSheet.create({
   icon: {
     width: widthToDp(5.1),
     height: widthToDp(5),
+  },
+  backView: {
+    position: 'absolute',
+    top: heightToDp(2),
+    left: widthToDp(2.5),
+    zIndex: 100,
+    backgroundColor: 'black',
+    padding: 5,
+    borderRadius: widthToDp(5),
+    //   backgroundColor: 'red',
+  },
+  backImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: heightToDp(5),
   },
 });

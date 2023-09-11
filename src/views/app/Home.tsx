@@ -82,6 +82,8 @@ export default function Home({navigation, route}: Props): JSX.Element {
         .filter(item => item !== undefined)
         .map(item => item.data.items)
         .flat();
+      console.log(vids[0]);
+
       vids = vids.map(item => ({
         id: item.id.videoId,
         title: item.snippet.title,

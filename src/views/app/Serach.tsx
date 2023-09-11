@@ -57,12 +57,12 @@ export default function Serach({navigation, route}: Props) {
   }, []);
   return (
     <SafeAreaView style={styles.container}>
-      <Input
+      {/* <Input
         handleChange={val => setSearch(val)}
         handleBlur={() => {}}
         value={search}
         placeholder={'Search'}
-      />
+      /> */}
       <Text style={styles.title}>Creators</Text>
       {isLoading ? (
         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
@@ -107,6 +107,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     color: Colors.WHITE,
-    marginVertical: heightToDp(3),
+    marginVertical: heightToDp(1),
   },
 });

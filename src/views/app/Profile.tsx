@@ -156,6 +156,68 @@ export default function Profile({navigation, route}: Props) {
       />
     );
   };
+  const renderHeader = () => {
+    return (
+      <>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Image
+            style={{width: widthToDp(6), height: widthToDp(6)}}
+            source={require('../../../assets/images/back.png')}
+          />
+        </TouchableOpacity>
+        <View style={styles.profileView}>
+          <View style={styles.imageView}>
+            <Image
+              source={{
+                uri: route.params.channel_image,
+              }}
+              style={styles.image}
+            />
+          </View>
+          <View
+            style={{
+              marginTop: heightToDp(2),
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+            <View style={styles.textView}>
+              <Text style={styles.text}>{route.params.channel_name}</Text>
+              <Image
+                style={{width: 15, height: 15, marginLeft: heightToDp(1)}}
+                source={require('../../../assets/images/thik.png')}
+              />
+            </View>
+            <Text style={{color: Colors.GRAY}}>bio about what his bio is</Text>
+          </View>
+          <View style={{marginVertical: heightToDp(3)}}>
+            <Button
+              text={
+                user?.followings.includes(route.params.channel_id)
+                  ? 'Following'
+                  : `Follow ${millify(Number(route.params.channel_subs))}`
+              }
+              withIcon={false}
+              backgroundColor={
+                user?.followings.includes(route.params.channel_id)
+                  ? Colors.BLACK
+                  : Colors.WHITE
+              }
+              textColor={
+                user?.followings.includes(route.params.channel_id)
+                  ? Colors.WHITE
+                  : Colors.BLACK
+              }
+              onPress={() => {
+                onFollow();
+              }}
+              isLoading={false}
+              disabled={false}
+            />
+          </View>
+        </View>
+      </>
+    );
+  };
 
   if (loadUser && !user) {
     return (
@@ -172,62 +234,6 @@ export default function Profile({navigation, route}: Props) {
   }
   return (
     <SafeAreaView style={styles.container}>
-      <TouchableOpacity onPress={() => navigation.goBack()}>
-        <Image
-          style={{width: widthToDp(6), height: widthToDp(6)}}
-          source={require('../../../assets/images/back.png')}
-        />
-      </TouchableOpacity>
-      <View style={styles.profileView}>
-        <View style={styles.imageView}>
-          <Image
-            source={{
-              uri: route.params.channel_image,
-            }}
-            style={styles.image}
-          />
-        </View>
-        <View
-          style={{
-            marginTop: heightToDp(2),
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-          <View style={styles.textView}>
-            <Text style={styles.text}>{route.params.channel_name}</Text>
-            <Image
-              style={{width: 15, height: 15, marginLeft: heightToDp(1)}}
-              source={require('../../../assets/images/thik.png')}
-            />
-          </View>
-          <Text style={{color: Colors.GRAY}}>bio about what his bio is</Text>
-        </View>
-        <View style={{marginVertical: heightToDp(3)}}>
-          <Button
-            text={
-              user?.followings.includes(route.params.channel_id)
-                ? 'Following'
-                : `Follow ${millify(Number(route.params.channel_subs))}`
-            }
-            withIcon={false}
-            backgroundColor={
-              user?.followings.includes(route.params.channel_id)
-                ? Colors.BLACK
-                : Colors.WHITE
-            }
-            textColor={
-              user?.followings.includes(route.params.channel_id)
-                ? Colors.WHITE
-                : Colors.BLACK
-            }
-            onPress={() => {
-              onFollow();
-            }}
-            isLoading={false}
-            disabled={false}
-          />
-        </View>
-      </View>
       {isLoading ? (
         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
           <ActivityIndicator animating color={Colors.WHITE} />
@@ -245,6 +251,7 @@ export default function Profile({navigation, route}: Props) {
 
             fetchVideos(true);
           }}
+          ListHeaderComponent={renderHeader}
           ListFooterComponent={() => {
             return (
               <View style={{paddingVertical: heightToDp(5)}}>

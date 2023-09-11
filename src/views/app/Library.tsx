@@ -74,9 +74,9 @@ export default function Library({navigation}: Props) {
             date: item.snippet.publishedAt,
             channel_id: item.snippet.channelId,
             subs: '',
+            sortDate: new Date(item.snippet.publishedAt).getTime(),
           };
         });
-        console.log(vidDetails);
 
         vidDetails = vidDetails.map((item: any) => {
           const channel = channelDetails.find(
@@ -88,6 +88,7 @@ export default function Library({navigation}: Props) {
             channelImage: channel?.image,
           };
         });
+        vidDetails.sort((a, b) => b.sortDate - a.sortDate);
         setLaterVideos(vidDetails);
       }
       setIsLoading(false);
@@ -112,71 +113,77 @@ export default function Library({navigation}: Props) {
       />
     );
   };
+  const renderHeader = () => {
+    return (
+      <>
+        <Text
+          style={{
+            color: Colors.WHITE,
+            marginVertical: heightToDp(2),
+            marginLeft: widthToDp(2.5),
+          }}>
+          Library
+        </Text>
+        <View>
+          <View style={{marginBottom: heightToDp(2)}}>
+            <Button
+              text={'apply for creator account'}
+              withIcon={false}
+              backgroundColor={Colors.WHITE}
+              textColor={Colors.BLACK}
+              onPress={() => {}}
+              isLoading={false}
+              disabled={false}
+            />
+          </View>
+          <View style={{marginBottom: heightToDp(2)}}>
+            <Button
+              text={'share app'}
+              withIcon={false}
+              backgroundColor={Colors.WHITE}
+              textColor={Colors.BLACK}
+              onPress={() => {}}
+              isLoading={false}
+              disabled={false}
+            />
+          </View>
+          <View style={{marginBottom: heightToDp(2)}}>
+            <Button
+              text={'request feature/report a bug'}
+              withIcon={false}
+              backgroundColor={Colors.WHITE}
+              textColor={Colors.BLACK}
+              onPress={() => {}}
+              isLoading={false}
+              disabled={false}
+            />
+          </View>
+          <View style={{marginBottom: heightToDp(2)}}>
+            <Button
+              text={'request a channel removal'}
+              withIcon={false}
+              backgroundColor={Colors.BLACK}
+              textColor={'red'}
+              onPress={() => {}}
+              isLoading={false}
+              disabled={false}
+            />
+          </View>
+        </View>
+
+        <Text
+          style={{
+            color: Colors.WHITE,
+            marginVertical: heightToDp(2),
+            marginLeft: widthToDp(2.5),
+          }}>
+          watch later
+        </Text>
+      </>
+    );
+  };
   return (
     <SafeAreaView style={styles.container}>
-      <Text
-        style={{
-          color: Colors.WHITE,
-          marginVertical: heightToDp(2),
-          marginLeft: widthToDp(2.5),
-        }}>
-        Library
-      </Text>
-      <View>
-        <View style={{marginBottom: heightToDp(2)}}>
-          <Button
-            text={'apply for creator account'}
-            withIcon={false}
-            backgroundColor={Colors.WHITE}
-            textColor={Colors.BLACK}
-            onPress={() => {}}
-            isLoading={false}
-            disabled={false}
-          />
-        </View>
-        <View style={{marginBottom: heightToDp(2)}}>
-          <Button
-            text={'share app'}
-            withIcon={false}
-            backgroundColor={Colors.WHITE}
-            textColor={Colors.BLACK}
-            onPress={() => {}}
-            isLoading={false}
-            disabled={false}
-          />
-        </View>
-        <View style={{marginBottom: heightToDp(2)}}>
-          <Button
-            text={'request feature/report a bug'}
-            withIcon={false}
-            backgroundColor={Colors.WHITE}
-            textColor={Colors.BLACK}
-            onPress={() => {}}
-            isLoading={false}
-            disabled={false}
-          />
-        </View>
-        <View style={{marginBottom: heightToDp(2)}}>
-          <Button
-            text={'request a channel removal'}
-            withIcon={false}
-            backgroundColor={Colors.BLACK}
-            textColor={'red'}
-            onPress={() => {}}
-            isLoading={false}
-            disabled={false}
-          />
-        </View>
-      </View>
-
-      <Text
-        style={{
-          color: Colors.WHITE,
-          marginVertical: heightToDp(2),
-          marginLeft: widthToDp(2.5),
-        }}>
-        watch later
-      </Text>
       {isLoading ? (
         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
           <ActivityIndicator animating color={Colors.WHITE} />
@@ -186,6 +193,7 @@ export default function Library({navigation}: Props) {
           data={laterVideos}
           keyExtractor={(_, index) => index.toString()}
           renderItem={renderItems}
+          ListHeaderComponent={renderHeader}
           ListEmptyComponent={() => {
             return (
               <View
